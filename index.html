@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>KHT_SYSTEM Portfolio</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Geist:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      background-color: #131314;
+      color: #e4e2e3;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glow-accent { box-shadow: 0 0 15px rgba(210, 188, 251, 0.1); }
+    .progress-gradient { background: linear-gradient(90deg, #d2bcfb 0%, #a8cece 100%); }
+
+    [contenteditable="true"] { cursor: text; border-radius: 2px; outline: none; }
+    [contenteditable="true"]:hover { outline: 1px dashed rgba(210, 188, 251, 0.35); }
+    [contenteditable="true"]:focus {
+      outline: 1px solid rgba(210, 188, 251, 0.7);
+      background: rgba(210, 188, 251, 0.04);
+    }
+
+    .tab-btn {
+      padding: 10px 18px;
+      font-size: 13px;
+      font-family: 'Geist', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      color: #909094;
+      white-space: nowrap;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      cursor: pointer;
+    }
+    .tab-btn.active { color: #d2bcfb; border-bottom-color: #d2bcfb; }
+    .tab-btn:hover:not(.active) { color: #c7c6ca; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .tl-wrap { position: relative; padding-left: 16px; }
+    .tl-line { position: absolute; left: 0; top: 6px; bottom: 0; width: 1px; background: #46474a; }
+    .tl-dot { position: absolute; left: -4px; top: 5px; width: 9px; height: 9px; border-radius: 50%; background: #d2bcfb; }
+
+    .lock-btn {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; font-family: 'Geist', sans-serif;
+      letter-spacing: 0.05em; cursor: pointer;
+      padding: 5px 10px; border-radius: 4px;
+      border: 1px solid #46474a;
+      background: none; transition: all 0.2s;
+    }
+    .lock-btn:hover { border-color: #d2bcfb; color: #d2bcfb; }
+    .lock-btn .material-symbols-outlined { font-size: 14px; }
+    .lock-btn.edit-mode { color: #909094; }
+    .lock-btn.locked-mode { color: #d2bcfb; border-color: #d2bcfb; background: rgba(210,188,251,0.07); }
+    body.locked [contenteditable="true"] { cursor: default; pointer-events: none; }
+    body.locked [contenteditable="true"]:hover { outline: none; }
+    body.locked [contenteditable="true"]:focus { outline: none; background: none; }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container": "#1f1f20",
+            "surface-container-low": "#1b1b1c",
+            "surface-container-high": "#2a2a2b",
+            "surface-container-highest": "#353536",
+            "outline-variant": "#46474a",
+            "on-surface": "#e4e2e3",
+            "on-surface-variant": "#c7c6ca",
+            "background": "#131314",
+            "secondary": "#d2bcfb",
+            "secondary-container": "#4f3d73",
+            "on-secondary-container": "#c0abe9",
+            "tertiary": "#a8cece",
+            "tertiary-container": "#001e1f",
+            "on-tertiary-container": "#658989",
+            "primary": "#c8c6c7"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background text-on-surface">
+
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-background border-b border-outline-variant flex items-center justify-between px-4 h-14">
+  <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-primary" style="font-size:20px;">terminal</span>
+    <span style="font-family:'Geist',sans-serif;font-weight:700;font-size:16px;letter-spacing:-0.03em;" class="text-primary">KHT_SYSTEM</span>
+  </div>
+  <button class="lock-btn edit-mode" id="lockBtn" onclick="toggleLock()">
+    <span class="material-symbols-outlined" id="lockIcon">edit</span>
+    <span id="lockLabel">편집 모드</span>
+  </button>
+</header>
+
+<!-- Category Tabs -->
+<nav class="sticky top-14 z-40 bg-background border-b border-outline-variant flex px-2">
+  <button class="tab-btn active" data-tab="highlight" onclick="switchTab('highlight')">하이라이트</button>
+  <button class="tab-btn" data-tab="portfolio" onclick="switchTab('portfolio')">포트폴리오</button>
+  <button class="tab-btn" data-tab="ai" onclick="switchTab('ai')">AI 역량</button>
+</nav>
+
+
+<!-- PAGE: 하이라이트 -->
+<div id="page-highlight" class="page active px-4 pt-4 pb-10 space-y-4">
+
+  <section class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <div class="flex items-start gap-3">
+      <div class="w-14 h-14 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-secondary" style="font-size:28px;">person</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h2 contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:20px;font-weight:700;" class="text-on-surface">김형태</h2>
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:12px;" class="text-secondary mt-0.5">시니어 데이터 엔지니어 · AI 연구원</p>
+        <div class="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+          <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">📍 서울, 대한민국</span>
+          <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">📧 kht@example.com</span>
+          <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">🔗 github.com/kht-dev</span>
+        </div>
+      </div>
+    </div>
+    <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:14px;line-height:1.65;" class="text-on-surface-variant">
+      8년간 데이터 엔지니어링·AI 연구 분야에서 활동하며, 대규모 실시간 파이프라인 설계와 LLM 기반 서비스 개발 경험을 보유하고 있습니다. 복잡한 기술 문제를 데이터 중심으로 해결하는 것을 전문으로 합니다.
+    </p>
+  </section>
+
+  <section class="grid grid-cols-3 gap-2">
+    <div class="bg-surface-container border border-outline-variant p-3 flex flex-col items-center text-center h-24 justify-center">
+      <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:30px;font-weight:700;line-height:1;" class="text-secondary">8</span>
+      <span style="font-family:'Geist',sans-serif;font-size:9px;letter-spacing:0.08em;" class="text-on-surface-variant mt-1">YEARS EXP</span>
+    </div>
+    <div class="bg-surface-container border border-outline-variant p-3 flex flex-col items-center text-center h-24 justify-center">
+      <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:30px;font-weight:700;line-height:1;" class="text-tertiary">42</span>
+      <span style="font-family:'Geist',sans-serif;font-size:9px;letter-spacing:0.08em;" class="text-on-surface-variant mt-1">PROJECTS</span>
+    </div>
+    <div class="bg-surface-container border border-outline-variant p-3 flex flex-col items-center text-center h-24 justify-center">
+      <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:30px;font-weight:700;line-height:1;" class="text-secondary">5</span>
+      <span style="font-family:'Geist',sans-serif;font-size:9px;letter-spacing:0.08em;" class="text-on-surface-variant mt-1">COMPANIES</span>
+    </div>
+  </section>
+
+  <section class="bg-surface-container border border-outline-variant p-4 space-y-4">
+    <h3 style="font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;" class="text-on-surface-variant uppercase flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-size:13px;">work</span>WORK EXPERIENCE
+    </h3>
+    <div class="tl-wrap space-y-4">
+      <div class="tl-line"></div>
+
+      <div class="relative">
+        <div class="tl-dot"></div>
+        <div class="flex justify-between items-start mb-1">
+          <div>
+            <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:14px;font-weight:600;" class="text-on-surface">네이버 클라우드</p>
+            <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-secondary">수석 데이터 엔지니어</p>
+          </div>
+          <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant flex-shrink-0 ml-2">2022 – 현재</span>
+        </div>
+        <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.6;" class="text-on-surface-variant">
+          일 5억 건 이상의 데이터를 처리하는 실시간 파이프라인 설계 및 운영. LLM 기반 추천 시스템 개발로 CTR 23% 향상.
+        </p>
+      </div>
+
+      <div class="relative">
+        <div class="tl-dot"></div>
+        <div class="flex justify-between items-start mb-1">
+          <div>
+            <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:14px;font-weight:600;" class="text-on-surface">카카오</p>
+            <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-secondary">데이터 엔지니어 · ML 엔지니어</p>
+          </div>
+          <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant flex-shrink-0 ml-2">2019 – 2022</span>
+        </div>
+        <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.6;" class="text-on-surface-variant">
+          메시지 서비스 데이터 분석 플랫폼 구축. 피처 파이프라인 자동화로 모델 배포 주기 60% 단축.
+        </p>
+      </div>
+
+      <div class="relative">
+        <div class="tl-dot"></div>
+        <div class="flex justify-between items-start mb-1">
+          <div>
+            <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:14px;font-weight:600;" class="text-on-surface">핀테크 스타트업</p>
+            <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-secondary">백엔드 개발자</p>
+          </div>
+          <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant flex-shrink-0 ml-2">2016 – 2019</span>
+        </div>
+        <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.6;" class="text-on-surface-variant">
+          금융 데이터 분석 API 설계·개발. Node.js + PostgreSQL 기반 고가용성 서비스 구축.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <h3 style="font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;" class="text-on-surface-variant uppercase flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-size:13px;">school</span>EDUCATION
+    </h3>
+    <div class="flex justify-between items-start">
+      <div>
+        <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:14px;font-weight:600;" class="text-on-surface">한국과학기술원 (KAIST)</p>
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-secondary">전산학부 학사</p>
+      </div>
+      <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">2012 – 2016</span>
+    </div>
+  </section>
+
+  <section class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <h3 style="font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;" class="text-on-surface-variant uppercase flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-size:13px;">code</span>CORE SKILLS
+    </h3>
+    <div class="flex flex-wrap gap-2">
+      <span class="px-2.5 py-1 border border-outline-variant bg-surface-container-low rounded-full flex items-center gap-1.5" style="font-size:11px;">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0"></span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;" class="text-on-surface">Python</span>
+      </span>
+      <span class="px-2.5 py-1 border border-outline-variant bg-surface-container-low rounded-full flex items-center gap-1.5" style="font-size:11px;">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0"></span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;" class="text-on-surface">Apache Spark</span>
+      </span>
+      <span class="px-2.5 py-1 border border-outline-variant bg-surface-container-low rounded-full flex items-center gap-1.5" style="font-size:11px;">
+        <span class="w-1.5 h-1.5 rounded-full bg-tertiary flex-shrink-0"></span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;" class="text-on-surface">Kafka</span>
+      </span>
+      <span class="px-2.5 py-1 border border-outline-variant bg-surface-container-low rounded-full flex items-center gap-1.5" style="font-size:11px;">
+        <span class="w-1.5 h-1.5 rounded-full bg-tertiary flex-shrink-0"></span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;" class="text-on-surface">PostgreSQL</span>
+      </span>
+      <span class="px-2.5 py-1 border border-outline-variant bg-surface-container-low rounded-full flex items-center gap-1.5" style="font-size:11px;">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0"></span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;" class="text-on-surface">Kubernetes</span>
+      </span>
+      <span class="px-2.5 py-1 border border-outline-variant bg-surface-container-low rounded-full flex items-center gap-1.5" style="font-size:11px;">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0"></span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;" class="text-on-surface">Docker</span>
+      </span>
+      <span class="px-2.5 py-1 border border-outline-variant bg-surface-container-low rounded-full flex items-center gap-1.5" style="font-size:11px;">
+        <span class="w-1.5 h-1.5 rounded-full bg-tertiary flex-shrink-0"></span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;" class="text-on-surface">PyTorch</span>
+      </span>
+      <span class="px-2.5 py-1 border border-outline-variant bg-surface-container-low rounded-full flex items-center gap-1.5" style="font-size:11px;">
+        <span class="w-1.5 h-1.5 rounded-full bg-tertiary flex-shrink-0"></span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;" class="text-on-surface">LangChain</span>
+      </span>
+    </div>
+  </section>
+
+</div>
+
+
+<!-- PAGE: 포트폴리오 -->
+<div id="page-portfolio" class="page px-4 pt-4 pb-10 space-y-3">
+
+  <h3 style="font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;" class="text-on-surface-variant uppercase flex items-center gap-2 mb-1">
+    <span class="material-symbols-outlined" style="font-size:13px;">layers</span>PROJECTS
+  </h3>
+
+  <div class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <div class="flex items-start gap-2">
+      <span class="w-2 h-2 rounded-full bg-secondary flex-shrink-0 mt-1.5"></span>
+      <h3 contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:15px;font-weight:600;" class="text-on-surface">실시간 데이터 파이프라인 플랫폼</h3>
+    </div>
+    <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.65;" class="text-on-surface-variant">
+      일 5억 건 이상의 이벤트를 처리하는 분산 스트리밍 파이프라인. Kafka + Flink 기반으로 설계하여 기존 배치 처리 대비 레이턴시 98% 감소. 네이버 클라우드 전사 데이터 인프라로 채택.
+    </p>
+    <div class="flex flex-wrap gap-1.5">
+      <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">Kafka</span>
+      <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">Apache Flink</span>
+      <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">Python</span>
+      <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">Kubernetes</span>
+    </div>
+    <div class="border-t border-outline-variant pt-2 flex justify-between">
+      <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-tertiary">↑ 레이턴시 98% 감소 · 처리량 10× 향상</p>
+      <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">2023</span>
+    </div>
+  </div>
+
+  <div class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <div class="flex items-start gap-2">
+      <span class="w-2 h-2 rounded-full bg-tertiary flex-shrink-0 mt-1.5"></span>
+      <h3 contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:15px;font-weight:600;" class="text-on-surface">LLM 기반 개인화 추천 시스템</h3>
+    </div>
+    <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.65;" class="text-on-surface-variant">
+      사용자 행동 데이터를 LLM으로 분석하여 개인화 콘텐츠 추천. A/B 테스트 결과 CTR 23% 향상, 체류 시간 15% 증가. 월 활성 사용자 2천만 명 서비스에 적용.
+    </p>
+    <div class="flex flex-wrap gap-1.5">
+      <span class="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">GPT-4o</span>
+      <span class="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">LangChain</span>
+      <span class="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">FastAPI</span>
+      <span class="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">Redis</span>
+    </div>
+    <div class="border-t border-outline-variant pt-2 flex justify-between">
+      <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-tertiary">↑ CTR 23% · 체류시간 15% 향상</p>
+      <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">2024</span>
+    </div>
+  </div>
+
+  <div class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <div class="flex items-start gap-2">
+      <span class="w-2 h-2 rounded-full bg-secondary flex-shrink-0 mt-1.5"></span>
+      <h3 contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:15px;font-weight:600;" class="text-on-surface">MLOps 플랫폼 구축</h3>
+    </div>
+    <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.65;" class="text-on-surface-variant">
+      모델 학습부터 서빙까지 자동화된 MLOps 파이프라인 구축. 피처 스토어 도입으로 팀 전체 모델 개발 생산성 40% 향상, 배포 주기 60% 단축.
+    </p>
+    <div class="flex flex-wrap gap-1.5">
+      <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">MLflow</span>
+      <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">Feast</span>
+      <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">Airflow</span>
+      <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">GCP</span>
+    </div>
+    <div class="border-t border-outline-variant pt-2 flex justify-between">
+      <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-tertiary">↑ 생산성 40% · 배포 주기 60% 단축</p>
+      <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">2022</span>
+    </div>
+  </div>
+
+  <div class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <div class="flex items-start gap-2">
+      <span class="w-2 h-2 rounded-full bg-tertiary flex-shrink-0 mt-1.5"></span>
+      <h3 contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:15px;font-weight:600;" class="text-on-surface">핀테크 이상 거래 탐지 시스템</h3>
+    </div>
+    <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.65;" class="text-on-surface-variant">
+      머신러닝 기반 실시간 이상 거래 탐지 모델 개발 및 배포. 오탐률 45% 감소, 탐지 정확도 91% 달성. 금융 당국 감사 기준 충족.
+    </p>
+    <div class="flex flex-wrap gap-1.5">
+      <span class="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">XGBoost</span>
+      <span class="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">Spark</span>
+      <span class="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">PostgreSQL</span>
+      <span class="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container rounded text-[10px]" style="font-family:'Geist',sans-serif;">Node.js</span>
+    </div>
+    <div class="border-t border-outline-variant pt-2 flex justify-between">
+      <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-tertiary">↓ 오탐률 45% 감소 · 탐지 정확도 91%</p>
+      <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">2020</span>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- PAGE: AI 역량 -->
+<div id="page-ai" class="page px-4 pt-4 pb-10 space-y-4">
+
+  <section class="bg-surface-container border border-outline-variant p-4 space-y-4">
+    <h3 style="font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;" class="text-on-surface-variant uppercase flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-size:13px;">psychology</span>AI / ML PROFICIENCY
+    </h3>
+
+    <div class="space-y-1">
+      <div class="flex justify-between">
+        <span contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:14px;" class="text-on-surface">LLM 엔지니어링</span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:12px;" class="text-secondary">92%</span>
+      </div>
+      <div class="h-1 bg-surface-container-highest w-full overflow-hidden">
+        <div class="h-full progress-gradient glow-accent ai-bar" style="width:92%;transition:width 1s cubic-bezier(0.4,0,0.2,1);"></div>
+      </div>
+      <div class="flex gap-2 flex-wrap pt-0.5">
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">GPT-4o</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">Claude</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">Gemini</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">LangChain</span>
+      </div>
+    </div>
+
+    <div class="space-y-1">
+      <div class="flex justify-between">
+        <span contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:14px;" class="text-on-surface">ML 엔지니어링</span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:12px;" class="text-secondary">88%</span>
+      </div>
+      <div class="h-1 bg-surface-container-highest w-full overflow-hidden">
+        <div class="h-full progress-gradient glow-accent ai-bar" style="width:88%;transition:width 1s cubic-bezier(0.4,0,0.2,1);"></div>
+      </div>
+      <div class="flex gap-2 flex-wrap pt-0.5">
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">PyTorch</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">Scikit-learn</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">MLflow</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">HuggingFace</span>
+      </div>
+    </div>
+
+    <div class="space-y-1">
+      <div class="flex justify-between">
+        <span contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:14px;" class="text-on-surface">프롬프트 엔지니어링</span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:12px;" class="text-secondary">85%</span>
+      </div>
+      <div class="h-1 bg-surface-container-highest w-full overflow-hidden">
+        <div class="h-full progress-gradient glow-accent ai-bar" style="width:85%;transition:width 1s cubic-bezier(0.4,0,0.2,1);"></div>
+      </div>
+      <div class="flex gap-2 flex-wrap pt-0.5">
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">Chain-of-thought</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">RAG</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">Fine-tuning</span>
+      </div>
+    </div>
+
+    <div class="space-y-1">
+      <div class="flex justify-between">
+        <span contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:14px;" class="text-on-surface">데이터 사이언스</span>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:12px;" class="text-secondary">78%</span>
+      </div>
+      <div class="h-1 bg-surface-container-highest w-full overflow-hidden">
+        <div class="h-full progress-gradient glow-accent ai-bar" style="width:78%;transition:width 1s cubic-bezier(0.4,0,0.2,1);"></div>
+      </div>
+      <div class="flex gap-2 flex-wrap pt-0.5">
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">Pandas</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">NumPy</span>
+        <span style="font-family:'Geist',sans-serif;font-size:10px;" class="text-on-surface-variant">Tableau</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <h3 style="font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;" class="text-on-surface-variant uppercase">AI TOOLS & FRAMEWORKS</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <div class="bg-surface-container-low border border-outline-variant p-3 rounded-lg">
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;font-weight:600;" class="text-secondary mb-1">LLM Orchestration</p>
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:10px;line-height:1.6;" class="text-on-surface-variant">LangChain, LlamaIndex, AutoGen, CrewAI</p>
+      </div>
+      <div class="bg-surface-container-low border border-outline-variant p-3 rounded-lg">
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;font-weight:600;" class="text-tertiary mb-1">Model Training</p>
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:10px;line-height:1.6;" class="text-on-surface-variant">PyTorch, HuggingFace, LoRA, QLoRA</p>
+      </div>
+      <div class="bg-surface-container-low border border-outline-variant p-3 rounded-lg">
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;font-weight:600;" class="text-secondary mb-1">Vector DB</p>
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:10px;line-height:1.6;" class="text-on-surface-variant">Pinecone, Weaviate, Chroma, pgvector</p>
+      </div>
+      <div class="bg-surface-container-low border border-outline-variant p-3 rounded-lg">
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;font-weight:600;" class="text-tertiary mb-1">Serving & Deploy</p>
+        <p contenteditable="true" style="font-family:'Geist',sans-serif;font-size:10px;line-height:1.6;" class="text-on-surface-variant">vLLM, TensorRT, ONNX, Triton</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <h3 style="font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;" class="text-on-surface-variant uppercase">KEY AI PROJECTS</h3>
+    <div class="space-y-3">
+      <div class="flex gap-3 items-start pb-3 border-b border-outline-variant">
+        <span class="material-symbols-outlined text-secondary flex-shrink-0" style="font-size:16px;margin-top:1px;">smart_toy</span>
+        <div>
+          <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;" class="text-on-surface">사내 지식 베이스 RAG 시스템</p>
+          <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.55;" class="text-on-surface-variant mt-0.5">10만 개 이상의 문서를 벡터화하여 자연어 질의응답 시스템 구축. 검색 정확도 89% 달성.</p>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start pb-3 border-b border-outline-variant">
+        <span class="material-symbols-outlined text-tertiary flex-shrink-0" style="font-size:16px;margin-top:1px;">auto_awesome</span>
+        <div>
+          <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;" class="text-on-surface">코드 리뷰 자동화 AI 에이전트</p>
+          <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.55;" class="text-on-surface-variant mt-0.5">PR 자동 분석 및 피드백 생성 에이전트. 코드 리뷰 시간 70% 절감.</p>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start">
+        <span class="material-symbols-outlined text-secondary flex-shrink-0" style="font-size:16px;margin-top:1px;">monitoring</span>
+        <div>
+          <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;" class="text-on-surface">이상 탐지 멀티모달 LLM</p>
+          <p contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:12px;line-height:1.55;" class="text-on-surface-variant mt-0.5">로그 + 메트릭 통합 분석 LLM 파인튜닝. F1 Score 0.94 달성.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-surface-container border border-outline-variant p-4 space-y-3">
+    <h3 style="font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;" class="text-on-surface-variant uppercase flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-size:13px;">verified</span>CERTIFICATIONS
+    </h3>
+    <div class="space-y-2.5">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0"></span>
+          <span contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:13px;" class="text-on-surface">AWS Certified ML Specialty</span>
+        </div>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">2023</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-tertiary flex-shrink-0"></span>
+          <span contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:13px;" class="text-on-surface">Google Professional Data Engineer</span>
+        </div>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">2022</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0"></span>
+          <span contenteditable="true" style="font-family:'Hanken Grotesk',sans-serif;font-size:13px;" class="text-on-surface">Databricks Certified Developer</span>
+        </div>
+        <span contenteditable="true" style="font-family:'Geist',sans-serif;font-size:11px;" class="text-on-surface-variant">2021</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.querySelector('[data-tab="' + name + '"]').classList.add('active');
+    if (name === 'ai') animateBars(document.getElementById('page-ai'));
+  }
+
+  function animateBars(container) {
+    container.querySelectorAll('.ai-bar').forEach(bar => {
+      const w = bar.style.width;
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        bar.style.transition = 'width 1s cubic-bezier(0.4,0,0.2,1)';
+        bar.style.width = w;
+      }));
+    });
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.closest('[contenteditable="true"]')) {
+      const tag = e.target.tagName.toLowerCase();
+      if (tag !== 'p' && tag !== 'div') e.preventDefault();
+    }
+  });
+
+  function toggleLock() {
+    const body = document.body;
+    const btn = document.getElementById('lockBtn');
+    const icon = document.getElementById('lockIcon');
+    const label = document.getElementById('lockLabel');
+    const isLocked = body.classList.toggle('locked');
+    if (isLocked) {
+      icon.textContent = 'lock';
+      label.textContent = '잠금됨';
+      btn.classList.replace('edit-mode', 'locked-mode');
+      document.activeElement.blur();
+    } else {
+      icon.textContent = 'edit';
+      label.textContent = '편집 모드';
+      btn.classList.replace('locked-mode', 'edit-mode');
+    }
+  }
+</script>
+
+</body>
+</html>
