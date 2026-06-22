@@ -49,7 +49,7 @@ function postCardHTML(p, rank) {
         <div class="sub">by ${escapeHtml(p.author)}</div>
       </div>
       <div class="footer">
-        <button class="vote-btn" data-action="vote" ${voted ? "disabled" : ""}>▲ ${p.votes}</button>
+        <button class="vote-btn ${voted ? "voted" : ""}" data-action="vote" ${voted ? "disabled" : ""}>${voted ? "❤️" : "🤍"} ${p.votes}</button>
         <button class="del-btn" data-action="del" title="삭제">🗑️</button>
       </div>
     </article>`;
