@@ -1,5 +1,5 @@
 import { firebaseConfig, ADMIN_PASSWORD } from "./firebase-config.js";
-import { rankPosts, formatPrice, hasVoted, markVoted } from "./mukgit.utils.js";
+import { rankPosts, formatPrice, hasVoted, markVoted, validatePostInput } from "./mukgit.utils.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, onSnapshot,
@@ -89,6 +89,90 @@ onSnapshot(postsCol, (snap) => {
 }, (err) => {
   console.error(err);
   statusEl.textContent = "목록을 불러오지 못했어요. 새로고침해 주세요.";
+});
+
+const modal = $("#write-modal");
+const form = $("#write-form");
+const errorsEl = $("#f-errors");
+const submitBtn = $("#f-submit");
+
+$("#open-write").addEventListener("click", () => { modal.hidden = false; });
+$("#f-cancel").addEventListener("click", () => closeModal());
+modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+function closeModal() {
+  modal.hidden = true;
+  form.reset();
+  errorsEl.innerHTML = "";
+}
+
+// 이미지를 최대 1000px로 리사이즈 + JPEG 압축
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const max = 1000;
+      let { width, height } = img;
+      if (width > max || height > max) {
+        const scale = Math.min(max / width, max / height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("압축 실패"))),
+        "image/jpeg", 0.8
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("이미지 로드 실패")); };
+    img.src = url;
+  });
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const file = $("#f-image").files[0];
+  const input = {
+    foodName: $("#f-food").value,
+    author: $("#f-author").value,
+    price: $("#f-price").value,
+    storeName: $("#f-store").value,
+    hasImage: !!file,
+  };
+  const { valid, errors } = validatePostInput(input);
+  errorsEl.innerHTML = errors.map((m) => `<li>${escapeHtml(m)}</li>`).join("");
+  if (!valid) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "봉헌 중...";
+  try {
+    const blob = await compressImage(file);
+    const path = `posts/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, blob);
+    const imageUrl = await getDownloadURL(storageRef);
+    await addDoc(postsCol, {
+      foodName: input.foodName.trim(),
+      author: input.author.trim(),
+      price: Number(input.price),
+      storeName: input.storeName.trim(),
+      imageUrl,
+      imagePath: path,
+      votes: 0,
+      createdAt: serverTimestamp(),
+    });
+    closeModal();
+  } catch (err) {
+    console.error(err);
+    errorsEl.innerHTML = `<li>저장에 실패했어요. 다시 시도해 주세요.</li>`;
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "봉헌";
+  }
 });
 
 // 다음 태스크에서 사용할 핸들 export 대용 (모듈 스코프 유지)
