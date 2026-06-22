@@ -99,6 +99,12 @@ function closeDetail() {
 $("#detail-close").addEventListener("click", closeDetail);
 detailModal.addEventListener("click", (e) => { if (e.target === detailModal) closeDetail(); });
 
+// ---- 도움말 ----
+const helpModal = $("#help-modal");
+$("#help-btn").addEventListener("click", () => { helpModal.hidden = false; });
+$("#help-close").addEventListener("click", () => { helpModal.hidden = true; });
+helpModal.addEventListener("click", (e) => { if (e.target === helpModal) helpModal.hidden = true; });
+
 let commentsUnsub = null;
 const commentListEl = $("#comment-list");
 const commentForm = $("#comment-form");
