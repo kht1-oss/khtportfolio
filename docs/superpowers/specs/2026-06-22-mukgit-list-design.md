@@ -14,7 +14,7 @@
 ## 확정된 결정 사항
 | 항목 | 결정 |
 |---|---|
-| 데이터 저장/공유 | Firebase (Firestore + Storage), 무료 한도 |
+| 데이터 저장/공유 | Firebase Firestore (무료 Spark). 사진은 문서 내 data URL로 저장, Storage 미사용 |
 | 화면 호스팅 | 정적 파일을 GitHub Pages에 배포 |
 | 로그인 | 없음 |
 | 추천 중복 방지 | 기기별 1회 (브라우저 localStorage 기록) |
@@ -26,9 +26,11 @@
 ## 아키텍처
 - 화면: 정적 `mukgit.html` (HTML/CSS/Vanilla JS) — GitHub Pages 배포
   - 포트폴리오 사이트의 `index.html`과 구분하기 위해 파일명을 `mukgit.html`로 둔다
-- 백엔드: Firebase
-  - Firestore: 글 데이터 + 추천수
-  - Storage: 음식 사진 파일
+- 백엔드: Firebase **Firestore** (무료 Spark)
+  - Firestore: 글 데이터 + 추천수 + 사진
+  - 사진은 별도 Storage가 아니라 **Firestore 문서 안에 data URL(base64)로 직접 저장**
+    - 이유: Firebase Storage가 정책 변경으로 무료 Spark에서 막히고 Blaze(카드 등록) 필요. 사진을 압축해 Firestore에 넣으면 카드 없이 완전 무료로 유지 가능.
+    - 제약: 사진 1장은 Firestore 문서 한도(약 1MB) 아래로 압축(클라이언트에서 해상도·화질 자동 조절). 지인용 소규모엔 충분.
 - Firebase JS SDK를 CDN으로 불러와 클라이언트에서 직접 연동
 - Firebase 설정값은 코드에 공개됨(Firebase 설계상 정상). 접근은 보안 규칙으로 통제.
 
@@ -40,8 +42,8 @@
    - 각 카드: 사진, 음식이름, 가게이름, 가격, 작성자, 추천수, ▲추천 버튼, 🗑️삭제 버튼
 3. **글쓰기 (＋버튼 → 모달)**
    - 입력: 사진(1장), 음식이름, 작성자 이름, 가격(숫자), 가게 이름
-   - 사진은 업로드 전 클라이언트에서 적당히 리사이즈/압축 → Storage 업로드 → URL 획득
-   - Firestore에 글 1건 생성(votes=0, createdAt=서버시각)
+   - 사진은 클라이언트에서 리사이즈/압축 → data URL(base64) 문자열로 변환(문서 한도 아래로 자동 조절)
+   - Firestore에 글 1건 생성(imageUrl=data URL, votes=0, createdAt=서버시각)
 
 ## 데이터 모델 — Firestore `posts` 컬렉션
 | 필드 | 타입 | 설명 |
@@ -50,7 +52,7 @@
 | `author` | string | 작성자 이름 |
 | `price` | number | 가격 |
 | `storeName` | string | 가게 이름 |
-| `imageUrl` | string | Storage 사진 URL |
+| `imageUrl` | string | 사진 data URL(base64, 약 1MB 미만으로 압축됨) |
 | `votes` | number | 추천수(기본 0) |
 | `createdAt` | timestamp | 작성 시각 |
 
@@ -58,7 +60,7 @@
 - **글 목록 표시**: `onSnapshot`으로 `posts` 실시간 구독 → 추천수 바뀌면 화면 자동 갱신
 - **추천**: 버튼 클릭 → 해당 문서 `votes` 1 증가(`increment(1)`) → localStorage에 글 ID 기록
   - 이미 기록된 글이면 버튼 비활성/막음 (기기별 1회 제한)
-- **삭제**: 🗑️ → 관리자 암호 입력 → 일치 시 Firestore 문서 + Storage 사진 삭제
+- **삭제**: 🗑️ → 관리자 암호 입력 → 일치 시 Firestore 문서 삭제(사진은 문서 안에 있으므로 함께 삭제됨)
 
 ## 보안 규칙 (방침)
 - 읽기: 허용
@@ -83,8 +85,9 @@
 - 모바일 화면에서 레이아웃 깨지지 않는지
 
 ## 비용/한도
-- Firebase 무료(Spark) 한도 내 소규모 사용 전제
-- 사진 압축으로 Storage 용량/전송량 절약
+- Firebase 무료(Spark) 한도 내 소규모 사용 전제 (카드 등록 불필요)
+- 사진을 Firestore 문서에 넣으므로 Storage/Blaze 불필요. 사진 1장 약 1MB 미만으로 압축
+- Firestore 무료 한도(저장 1GiB, 읽기 5만/일, 쓰기 2만/일)는 지인용 규모에 충분
 
 ## 향후 확장 여지 (지금은 안 함)
 - 개인 로그인(Firebase Auth)로 추천 1인1표 정확화

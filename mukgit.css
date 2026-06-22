@@ -1,0 +1,79 @@
+:root {
+  --bg-top: #eaf4ff;
+  --bg-bottom: #dbeaff;
+  --card: #ffffff;
+  --ink: #2a3a4a;
+  --accent: #1f5fa6;
+  --gold: #f0c14b;
+  --gold-deep: #a6781a;
+  --line: #cfe2f7;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Georgia", "Nanum Myeongjo", serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+  min-height: 100vh;
+}
+.site-header { text-align: center; padding: 28px 16px 12px; }
+.site-header .pillars { color: #5a8fd0; letter-spacing: 4px; font-size: 13px; }
+.site-header h1 { color: var(--accent); margin: 8px 0 4px; font-size: 28px; }
+.site-header .tagline { color: #5a7799; margin: 0; font-size: 14px; }
+main { max-width: 960px; margin: 0 auto; padding: 8px 16px 80px; }
+.status, .empty { text-align: center; color: #5a7799; }
+
+/* 시상대: 1위 중앙 크게, 2·3위 양옆 */
+.podium { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 12px; align-items: end; margin-bottom: 18px; }
+.grid-rest { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+
+.post {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(80, 120, 180, 0.12);
+  display: flex; flex-direction: column;
+}
+.post.rank-1 { border: 2px solid var(--gold); box-shadow: 0 4px 14px rgba(240, 193, 75, 0.35); }
+.post .photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #cfe2f7; }
+.post .body { padding: 10px 12px; }
+.post .crown { font-size: 18px; }
+.post .fname { font-weight: bold; color: var(--accent); margin: 4px 0 2px; }
+.post.rank-1 .fname { font-size: 20px; }
+.post .sub { font-size: 12px; color: #7a8aa0; }
+.post .footer { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-top: 1px solid var(--line); }
+.vote-btn {
+  background: #fdf0c8; color: var(--gold-deep); border: none;
+  border-radius: 20px; padding: 4px 12px; cursor: pointer; font-size: 13px;
+}
+.vote-btn:disabled { opacity: 0.55; cursor: default; }
+.del-btn { background: none; border: none; cursor: pointer; color: #b9bfc8; font-size: 14px; }
+
+/* 글쓰기 버튼 + 모달 */
+.fab {
+  position: fixed; right: 22px; bottom: 22px; width: 56px; height: 56px;
+  border-radius: 50%; border: none; background: var(--accent); color: #fff;
+  font-size: 30px; cursor: pointer; box-shadow: 0 4px 12px rgba(31, 95, 166, 0.4);
+}
+.modal {
+  position: fixed; inset: 0; background: rgba(31, 60, 100, 0.35);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal[hidden] { display: none; }
+.modal-card {
+  background: #fff; border-radius: 14px; padding: 20px; width: 100%; max-width: 380px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.modal-card h2 { color: var(--accent); margin: 0 0 4px; text-align: center; }
+.modal-card label { display: flex; flex-direction: column; font-size: 13px; gap: 4px; color: #5a7799; }
+.modal-card input { padding: 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
+.errors { color: #c0392b; font-size: 12px; margin: 0; padding-left: 18px; }
+.errors:empty { display: none; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+.btn-gold { background: var(--gold); color: var(--gold-deep); border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: bold; }
+.btn-ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 16px; cursor: pointer; }
+
+@media (max-width: 560px) {
+  .podium { grid-template-columns: 1fr; }
+}
