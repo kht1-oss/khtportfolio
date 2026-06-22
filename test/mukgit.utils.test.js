@@ -7,6 +7,7 @@ import {
   hasUserVoted,
   canDeletePost,
   canDeleteComment,
+  canEditPost,
 } from "../mukgit.utils.js";
 
 test("formatPrice: 숫자를 천단위 콤마 + 원으로", () => {
@@ -141,4 +142,16 @@ test("canDeleteComment: 남의 댓글이면 false", () => {
 
 test("canDeleteComment: 비로그인은 false", () => {
   assert.equal(canDeleteComment({ commenterUid: "u1" }, null, "admin@x.com"), false);
+});
+
+test("canEditPost: 작성자 본인이면 true", () => {
+  assert.equal(canEditPost({ ownerUid: "u1" }, { uid: "u1", email: "a@b.c" }), true);
+});
+
+test("canEditPost: 남의 글이면 false (관리자라도)", () => {
+  assert.equal(canEditPost({ ownerUid: "u2" }, { uid: "u1", email: "a@b.c" }), false);
+});
+
+test("canEditPost: 비로그인은 false", () => {
+  assert.equal(canEditPost({ ownerUid: "u1" }, null), false);
 });
