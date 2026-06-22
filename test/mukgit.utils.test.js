@@ -4,20 +4,9 @@ import {
   formatPrice,
   validatePostInput,
   rankPosts,
-  hasVoted,
-  markVoted,
+  hasUserVoted,
+  canDeletePost,
 } from "../mukgit.utils.js";
-
-function makeStorage(initial = {}) {
-  const m = { ...initial };
-  return {
-    getItem: (k) => (k in m ? m[k] : null),
-    setItem: (k, v) => {
-      m[k] = String(v);
-    },
-    _dump: () => m,
-  };
-}
 
 test("formatPrice: 숫자를 천단위 콤마 + 원으로", () => {
   assert.equal(formatPrice(28000), "28,000원");
@@ -90,17 +79,40 @@ test("rankPosts: 원본 배열을 변경하지 않음", () => {
   assert.deepEqual(input.map((p) => p.id), ["a", "b"]);
 });
 
-test("hasVoted / markVoted: 추천 기록", () => {
-  const s = makeStorage();
-  assert.equal(hasVoted(s, "post1"), false);
-  markVoted(s, "post1");
-  assert.equal(hasVoted(s, "post1"), true);
-  // 중복 마크해도 한 번만
-  markVoted(s, "post1");
-  assert.equal(JSON.parse(s._dump()["mukgit_voted"]).length, 1);
+test("hasUserVoted: voters에 내 uid가 있으면 true", () => {
+  assert.equal(hasUserVoted({ voters: ["u1", "u2"] }, { uid: "u1" }), true);
 });
 
-test("hasVoted: 손상된 저장값도 안전 처리", () => {
-  const s = makeStorage({ mukgit_voted: "엉터리" });
-  assert.equal(hasVoted(s, "x"), false);
+test("hasUserVoted: voters에 없으면 false", () => {
+  assert.equal(hasUserVoted({ voters: ["u2"] }, { uid: "u1" }), false);
+});
+
+test("hasUserVoted: 비로그인/voters 없음은 false (안전)", () => {
+  assert.equal(hasUserVoted({ voters: ["u1"] }, null), false);
+  assert.equal(hasUserVoted({}, { uid: "u1" }), false);
+});
+
+test("canDeletePost: 소유자면 true", () => {
+  assert.equal(
+    canDeletePost({ ownerUid: "u1" }, { uid: "u1", email: "a@b.c" }, "admin@x.com"),
+    true
+  );
+});
+
+test("canDeletePost: 관리자 이메일이면 true", () => {
+  assert.equal(
+    canDeletePost({ ownerUid: "u2" }, { uid: "u1", email: "admin@x.com" }, "admin@x.com"),
+    true
+  );
+});
+
+test("canDeletePost: 남의 글이면 false", () => {
+  assert.equal(
+    canDeletePost({ ownerUid: "u2" }, { uid: "u1", email: "a@b.c" }, "admin@x.com"),
+    false
+  );
+});
+
+test("canDeletePost: 비로그인은 false", () => {
+  assert.equal(canDeletePost({ ownerUid: "u1" }, null, "admin@x.com"), false);
 });
