@@ -209,6 +209,3 @@ boardEl.addEventListener("click", async (e) => {
     }
   }
 });
-
-// 다음 태스크에서 사용할 핸들 export 대용 (모듈 스코프 유지)
-export { db, storage, postsCol, renderBoard, escapeHtml };
