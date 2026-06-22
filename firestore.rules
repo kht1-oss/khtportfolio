@@ -4,7 +4,6 @@ service cloud.firestore {
     match /posts/{id} {
       allow read: if true;
 
-      // 생성: 로그인 + 본인을 소유자로 + votes 0 + voters 빈 배열 + 필수 필드 형식
       allow create: if request.auth != null
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.votes == 0
@@ -13,9 +12,9 @@ service cloud.firestore {
         && request.resource.data.author is string
         && request.resource.data.storeName is string
         && request.resource.data.price is number
-        && request.resource.data.imageUrl is string;
+        && request.resource.data.imageUrl is string
+        && (!('body' in request.resource.data) || request.resource.data.body is string);
 
-      // 추천: 로그인 + votes 1 증가 + voters에 내 uid 한 번만 추가 + 그 외 필드 불변
       allow update: if request.auth != null
         && request.resource.data.votes == resource.data.votes + 1
         && !(request.auth.uid in resource.data.get('voters', []))
@@ -23,10 +22,21 @@ service cloud.firestore {
         && request.resource.data.voters.size() == resource.data.get('voters', []).size() + 1
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes', 'voters']);
 
-      // 삭제: 글 소유자 본인 또는 관리자 이메일
       allow delete: if request.auth != null
         && (request.auth.uid == resource.data.get('ownerUid', '')
             || request.auth.token.email == 'khtc0228@gmail.com');
+
+      match /comments/{cid} {
+        allow read: if true;
+        allow create: if request.auth != null
+          && request.resource.data.commenterUid == request.auth.uid
+          && request.resource.data.name is string
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0;
+        allow delete: if request.auth != null
+          && (request.auth.uid == resource.data.commenterUid
+              || request.auth.token.email == 'khtc0228@gmail.com');
+      }
     }
   }
 }
