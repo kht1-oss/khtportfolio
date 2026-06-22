@@ -1,12 +1,12 @@
 :root {
-  --bg-top: #eaf4ff;
-  --bg-bottom: #dbeaff;
+  --bg-top: #ffd9e8;
+  --bg-bottom: #fff5fa;
   --card: #ffffff;
-  --ink: #2a3a4a;
-  --accent: #1f5fa6;
+  --ink: #4a3a40;
+  --accent: #c2487a;
   --gold: #f0c14b;
   --gold-deep: #a6781a;
-  --line: #cfe2f7;
+  --line: #f3dbe6;
 }
 * { box-sizing: border-box; }
 body {
@@ -17,11 +17,12 @@ body {
   min-height: 100vh;
 }
 .site-header { text-align: center; padding: 28px 16px 12px; }
-.site-header .pillars { color: #5a8fd0; letter-spacing: 4px; font-size: 13px; }
-.site-header h1 { color: var(--accent); margin: 8px 0 4px; font-size: 28px; }
-.site-header .tagline { color: #5a7799; margin: 0; font-size: 14px; }
+.site-header .pillars { color: #e0a3c0; letter-spacing: 4px; font-size: 13px; }
+.site-header h1 { color: var(--accent); margin: 8px 0 6px; font-size: 28px; }
+.site-header .gold-line { width: 120px; height: 2px; background: var(--gold); border: none; margin: 0 auto 6px; }
+.site-header .tagline { color: #b07a93; margin: 0; font-size: 14px; }
 main { max-width: 960px; margin: 0 auto; padding: 8px 16px 80px; }
-.status, .empty { text-align: center; color: #5a7799; }
+.status, .empty { text-align: center; color: #b07a93; }
 
 /* 시상대: 1위 중앙 크게, 2·3위 양옆 */
 .podium { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 12px; align-items: end; margin-bottom: 18px; }
