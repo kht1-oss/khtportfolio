@@ -9,5 +9,5 @@ export const firebaseConfig = {
   appId: "1:392314753428:web:18ca4052ff9b61dee4bf81",
 };
 
-// 글 삭제용 관리자 암호 (원하는 값으로 변경). 지인용 단순 보호 수준입니다.
-export const ADMIN_PASSWORD = "kht1235";
+// 관리자(전체 글 삭제 가능) 구글 계정 이메일. 로그인한 본인 이메일과 비교한다.
+export const ADMIN_EMAIL = "khtc0228@gmail.com";
