@@ -27,10 +27,10 @@ function postToView(docSnap) {
     id: docSnap.id,
     foodName: d.foodName ?? "",
     author: d.author ?? "",
-    price: d.price ?? 0,
+    price: Number(d.price ?? 0),
     storeName: d.storeName ?? "",
     imageUrl: d.imageUrl ?? "",
-    votes: d.votes ?? 0,
+    votes: Number(d.votes ?? 0),
     imagePath: d.imagePath ?? "",
     createdAtMillis: created,
   };
@@ -40,8 +40,8 @@ function postCardHTML(p, rank) {
   const crown = rank === 1 ? "👑" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : `#${rank}`;
   const voted = hasVoted(localStorage, p.id);
   return `
-    <article class="post rank-${rank}" data-id="${p.id}" data-path="${p.imagePath}">
-      <img class="photo" src="${p.imageUrl}" alt="${escapeHtml(p.foodName)}" loading="lazy" />
+    <article class="post rank-${rank}" data-id="${escapeHtml(p.id)}" data-path="${escapeHtml(p.imagePath)}">
+      <img class="photo" src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.foodName)}" loading="lazy" />
       <div class="body">
         <span class="crown">${crown}</span>
         <div class="fname">${escapeHtml(p.foodName)}</div>
