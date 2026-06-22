@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏛️ 올림푸스 맛킷리스트</title>
+  <link rel="stylesheet" href="mukgit.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="pillars">▌▐ ▌▐ ▌▐ ▌▐ ▌▐ ▌▐ ▌▐</div>
+    <h1>올림푸스 명예의 전당</h1>
+    <p class="tagline">맛있게 먹은 음식을 바치고, 추천으로 신전에 올리세요</p>
+  </header>
+
+  <main>
+    <p id="status" class="status"></p>
+    <p id="empty" class="empty" hidden>아직 봉헌된 음식이 없어요. 첫 맛집을 올려보세요! 🍽️</p>
+    <section id="board" class="board" aria-live="polite"></section>
+  </main>
+
+  <button id="open-write" class="fab" title="맛집 올리기">＋</button>
+
+  <div id="write-modal" class="modal" hidden>
+    <form id="write-form" class="modal-card">
+      <h2>맛집 봉헌하기</h2>
+      <label>음식 이름<input id="f-food" type="text" maxlength="40" /></label>
+      <label>작성자 이름<input id="f-author" type="text" maxlength="20" /></label>
+      <label>가격(원)<input id="f-price" type="number" min="0" step="100" /></label>
+      <label>가게 이름<input id="f-store" type="text" maxlength="40" /></label>
+      <label>사진<input id="f-image" type="file" accept="image/*" /></label>
+      <ul id="f-errors" class="errors"></ul>
+      <div class="modal-actions">
+        <button type="button" id="f-cancel" class="btn-ghost">취소</button>
+        <button type="submit" id="f-submit" class="btn-gold">봉헌</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module" src="mukgit.js"></script>
+</body>
+</html>
