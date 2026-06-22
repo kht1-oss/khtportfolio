@@ -31,18 +31,27 @@ main { max-width: 960px; margin: 0 auto; padding: 8px 16px 80px; }
 .post {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(80, 120, 180, 0.12);
+  box-shadow: 0 4px 14px rgba(170, 90, 130, 0.14);
   display: flex; flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.post.rank-1 { border: 2px solid var(--gold); box-shadow: 0 4px 14px rgba(240, 193, 75, 0.35); }
-.post .photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #cfe2f7; }
+.post.rank-1 {
+  border: 2px solid var(--gold);
+  box-shadow: 0 8px 22px rgba(240, 193, 75, 0.4);
+}
+.post .photo {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  background: #ffe3ec;
+  transition: transform 0.3s ease;
+}
 .post .body { padding: 10px 12px; }
 .post .crown { font-size: 18px; }
+.post.rank-1 .crown { font-size: 22px; filter: drop-shadow(0 0 5px rgba(240, 193, 75, 0.9)); }
 .post .fname { font-weight: bold; color: var(--accent); margin: 4px 0 2px; }
 .post.rank-1 .fname { font-size: 20px; }
-.post .sub { font-size: 12px; color: #7a8aa0; }
+.post .sub { font-size: 12px; color: #b08296; }
 .post .footer { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-top: 1px solid var(--line); }
 .vote-btn {
   background: #fdf0c8; color: var(--gold-deep); border: none;
@@ -74,6 +83,16 @@ main { max-width: 960px; margin: 0 auto; padding: 8px 16px 80px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
 .btn-gold { background: var(--gold); color: var(--gold-deep); border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: bold; }
 .btn-ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 16px; cursor: pointer; }
+
+/* 호버 효과는 마우스가 있는 환경(PC)에서만 */
+@media (hover: hover) {
+  .post:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(170, 90, 130, 0.26);
+  }
+  .post:hover .photo { transform: scale(1.04); }
+  .post.rank-1:hover { box-shadow: 0 14px 30px rgba(240, 193, 75, 0.5); }
+}
 
 @media (max-width: 560px) {
   .podium { grid-template-columns: 1fr; }
