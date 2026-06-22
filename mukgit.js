@@ -175,5 +175,40 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
+boardEl.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) return;
+  const card = btn.closest(".post");
+  const id = card.dataset.id;
+
+  if (btn.dataset.action === "vote") {
+    if (hasVoted(localStorage, id)) return;
+    btn.disabled = true;
+    try {
+      await updateDoc(doc(db, "posts", id), { votes: increment(1) });
+      markVoted(localStorage, id);
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      alert("추천에 실패했어요. 다시 시도해 주세요.");
+    }
+    return;
+  }
+
+  if (btn.dataset.action === "del") {
+    const pw = prompt("관리자 암호를 입력하세요:");
+    if (pw === null) return;
+    if (pw !== ADMIN_PASSWORD) { alert("암호가 일치하지 않습니다."); return; }
+    try {
+      const path = card.dataset.path;
+      if (path) await deleteObject(ref(storage, path)).catch(() => {});
+      await deleteDoc(doc(db, "posts", id));
+    } catch (err) {
+      console.error(err);
+      alert("삭제에 실패했어요.");
+    }
+  }
+});
+
 // 다음 태스크에서 사용할 핸들 export 대용 (모듈 스코프 유지)
 export { db, storage, postsCol, renderBoard, escapeHtml };
