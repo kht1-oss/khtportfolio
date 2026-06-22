@@ -5,14 +5,15 @@ import {
   getFirestore, collection, addDoc, onSnapshot,
   doc, updateDoc, deleteDoc, increment, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getStorage, ref, uploadBytes, getDownloadURL, deleteObject,
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const postsCol = collection(db, "posts");
+
+// 사진은 Firestore 문서 안에 data URL(base64)로 직접 저장한다(Storage 미사용).
+// Firestore 문서 한도는 약 1MB이므로, 이미지 data URL을 이 한도 아래로 압축한다.
+const MAX_IMAGE_DIM = 1000;
+const MAX_IMAGE_BYTES = 900 * 1024; // 약 900KB — 나머지 필드 여유 확보
 
 const $ = (sel) => document.querySelector(sel);
 const boardEl = $("#board");
@@ -31,7 +32,6 @@ function postToView(docSnap) {
     storeName: d.storeName ?? "",
     imageUrl: d.imageUrl ?? "",
     votes: Number(d.votes ?? 0),
-    imagePath: d.imagePath ?? "",
     createdAtMillis: created,
   };
 }
@@ -40,7 +40,7 @@ function postCardHTML(p, rank) {
   const crown = rank === 1 ? "👑" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : `#${rank}`;
   const voted = hasVoted(localStorage, p.id);
   return `
-    <article class="post rank-${rank}" data-id="${escapeHtml(p.id)}" data-path="${escapeHtml(p.imagePath)}">
+    <article class="post rank-${rank}" data-id="${escapeHtml(p.id)}">
       <img class="photo" src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.foodName)}" loading="lazy" />
       <div class="body">
         <span class="crown">${crown}</span>
@@ -106,29 +106,52 @@ function closeModal() {
   errorsEl.innerHTML = "";
 }
 
-// 이미지를 최대 1000px로 리사이즈 + JPEG 압축
+// 이미지를 리사이즈 + JPEG 압축해서 data URL(base64 문자열)로 반환한다.
+// data URL 길이가 한도를 넘으면 화질→해상도 순으로 줄여 한도 아래로 맞춘다.
 function compressImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
-      const max = 1000;
       let { width, height } = img;
-      if (width > max || height > max) {
-        const scale = Math.min(max / width, max / height);
+      if (width > MAX_IMAGE_DIM || height > MAX_IMAGE_DIM) {
+        const scale = Math.min(MAX_IMAGE_DIM / width, MAX_IMAGE_DIM / height);
         width = Math.round(width * scale);
         height = Math.round(height * scale);
       }
       const canvas = document.createElement("canvas");
-      canvas.width = width; canvas.height = height;
-      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-      canvas.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error("압축 실패"))),
-        "image/jpeg", 0.8
-      );
+      const render = () => {
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      };
+      render();
+
+      let quality = 0.8;
+      let dataUrl = canvas.toDataURL("image/jpeg", quality);
+      let guard = 0;
+      // 한도를 넘으면: 먼저 화질을 0.4까지 낮추고, 그래도 크면 해상도를 15%씩 줄인다.
+      while (dataUrl.length > MAX_IMAGE_BYTES && guard < 12) {
+        guard++;
+        if (quality > 0.4) {
+          quality = Math.round((quality - 0.1) * 10) / 10;
+        } else {
+          width = Math.round(width * 0.85);
+          height = Math.round(height * 0.85);
+          render();
+          quality = 0.7;
+        }
+        dataUrl = canvas.toDataURL("image/jpeg", quality);
+      }
+
+      if (dataUrl.length > MAX_IMAGE_BYTES) {
+        reject(new Error("이미지가 너무 큽니다. 더 작은 사진을 사용해 주세요."));
+        return;
+      }
+      resolve(dataUrl);
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("이미지 로드 실패")); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("이미지를 불러오지 못했어요.")); };
     img.src = url;
   });
 }
@@ -150,25 +173,20 @@ form.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
   submitBtn.textContent = "봉헌 중...";
   try {
-    const blob = await compressImage(file);
-    const path = `posts/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
-    const storageRef = ref(storage, path);
-    await uploadBytes(storageRef, blob);
-    const imageUrl = await getDownloadURL(storageRef);
+    const imageUrl = await compressImage(file);
     await addDoc(postsCol, {
       foodName: input.foodName.trim(),
       author: input.author.trim(),
       price: Number(input.price),
       storeName: input.storeName.trim(),
       imageUrl,
-      imagePath: path,
       votes: 0,
       createdAt: serverTimestamp(),
     });
     closeModal();
   } catch (err) {
     console.error(err);
-    errorsEl.innerHTML = `<li>저장에 실패했어요. 다시 시도해 주세요.</li>`;
+    errorsEl.innerHTML = `<li>${escapeHtml(err.message || "저장에 실패했어요. 다시 시도해 주세요.")}</li>`;
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = "봉헌";
@@ -179,6 +197,7 @@ boardEl.addEventListener("click", async (e) => {
   const btn = e.target.closest("button[data-action]");
   if (!btn) return;
   const card = btn.closest(".post");
+  if (!card) return;
   const id = card.dataset.id;
 
   if (btn.dataset.action === "vote") {
@@ -200,8 +219,6 @@ boardEl.addEventListener("click", async (e) => {
     if (pw === null) return;
     if (pw !== ADMIN_PASSWORD) { alert("암호가 일치하지 않습니다."); return; }
     try {
-      const path = card.dataset.path;
-      if (path) await deleteObject(ref(storage, path)).catch(() => {});
       await deleteDoc(doc(db, "posts", id));
     } catch (err) {
       console.error(err);
