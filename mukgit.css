@@ -16,7 +16,19 @@ body {
   background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
   min-height: 100vh;
 }
-.site-header { text-align: center; padding: 28px 16px 12px; }
+.site-header { text-align: center; padding: 28px 16px 12px; position: relative; }
+.auth {
+  position: absolute; top: 14px; right: 14px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: "Helvetica Neue", sans-serif;
+}
+.login-btn, .logout-btn {
+  border: 1px solid #f3cdde; background: #fff0f5; color: #c2487a;
+  border-radius: 20px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+}
+.login-btn:hover, .logout-btn:hover { background: #ffe3ee; }
+.user-area { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #b07a93; }
+.user-area[hidden] { display: none; }
 .site-header .pillars { color: #e0a3c0; letter-spacing: 4px; font-size: 13px; }
 .site-header h1 { color: var(--accent); margin: 8px 0 6px; font-size: 28px; }
 .site-header .gold-line { width: 120px; height: 2px; background: var(--gold); border: none; margin: 0 auto 6px; }
