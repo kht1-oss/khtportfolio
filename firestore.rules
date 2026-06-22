@@ -4,21 +4,39 @@ service cloud.firestore {
     match /posts/{id} {
       allow read: if true;
 
-      // 생성: 필수 필드 형식 검증, votes는 0으로 시작
-      allow create: if request.resource.data.foodName is string
+      allow create: if request.auth != null
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.votes == 0
+        && request.resource.data.voters == []
+        && request.resource.data.foodName is string
         && request.resource.data.author is string
         && request.resource.data.storeName is string
         && request.resource.data.price is number
         && request.resource.data.imageUrl is string
-        && request.resource.data.votes == 0;
+        && (!('body' in request.resource.data) || request.resource.data.body is string);
 
-      // 수정: votes를 1 증가시키는 것만 허용 (다른 필드 변경 차단)
-      allow update: if request.resource.data.votes == resource.data.votes + 1
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes']);
+      allow update: if request.auth != null
+        && request.resource.data.votes == resource.data.votes + 1
+        && !(request.auth.uid in resource.data.get('voters', []))
+        && (request.auth.uid in request.resource.data.voters)
+        && request.resource.data.voters.size() == resource.data.get('voters', []).size() + 1
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes', 'voters']);
 
-      // 삭제: 클라이언트에서 막음 (화면단 관리자 암호로만 수행 → 규칙은 허용)
-      // 지인용 단순 보호 수준. 더 엄격히 하려면 Firebase Auth 도입 필요.
-      allow delete: if true;
+      allow delete: if request.auth != null
+        && (request.auth.uid == resource.data.get('ownerUid', '')
+            || request.auth.token.email == 'khtc0228@gmail.com');
+
+      match /comments/{cid} {
+        allow read: if true;
+        allow create: if request.auth != null
+          && request.resource.data.commenterUid == request.auth.uid
+          && request.resource.data.name is string
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0;
+        allow delete: if request.auth != null
+          && (request.auth.uid == resource.data.commenterUid
+              || request.auth.token.email == 'khtc0228@gmail.com');
+      }
     }
   }
 }

@@ -1,5 +1,3 @@
-const VOTED_KEY = "mukgit_voted";
-
 export function formatPrice(price) {
   const n = Number(price);
   if (!Number.isFinite(n)) return "";
@@ -24,22 +22,16 @@ export function rankPosts(posts) {
   });
 }
 
-function readVoted(storage) {
-  const raw = storage.getItem(VOTED_KEY) || "[]";
-  try {
-    const ids = JSON.parse(raw);
-    return Array.isArray(ids) ? ids : [];
-  } catch {
-    return [];
-  }
+export function hasUserVoted(post, user) {
+  return !!user && Array.isArray(post?.voters) && post.voters.includes(user.uid);
 }
 
-export function hasVoted(storage, id) {
-  return readVoted(storage).includes(id);
+export function canDeletePost(post, user, adminEmail) {
+  if (!user) return false;
+  return post?.ownerUid === user.uid || user.email === adminEmail;
 }
 
-export function markVoted(storage, id) {
-  const ids = readVoted(storage);
-  if (!ids.includes(id)) ids.push(id);
-  storage.setItem(VOTED_KEY, JSON.stringify(ids));
+export function canDeleteComment(comment, user, adminEmail) {
+  if (!user) return false;
+  return comment?.commenterUid === user.uid || user.email === adminEmail;
 }

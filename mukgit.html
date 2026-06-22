@@ -7,7 +7,15 @@
   <link rel="stylesheet" href="mukgit.css" />
 </head>
 <body>
+  <div id="bg-emojis" class="bg-emojis" aria-hidden="true"></div>
   <header class="site-header">
+    <div class="auth">
+      <button id="login-btn" class="login-btn">구글로 로그인</button>
+      <span id="user-area" class="user-area" hidden>
+        <span id="user-name"></span>
+        <button id="logout-btn" class="logout-btn">로그아웃</button>
+      </span>
+    </div>
     <div class="pillars">▌▐ ▌▐ ▌▐ ▌▐ ▌▐ ▌▐ ▌▐</div>
     <h1>올림푸스 명예의 전당</h1>
     <hr class="gold-line" />
@@ -29,13 +37,36 @@
       <label>작성자 이름<input id="f-author" type="text" maxlength="20" /></label>
       <label>가격(원)<input id="f-price" type="number" min="0" step="100" /></label>
       <label>가게 이름<input id="f-store" type="text" maxlength="40" /></label>
+      <label>본문(선택)<textarea id="f-body" maxlength="1000" rows="3" placeholder="이러이러해서 맛있었다 등 자유롭게"></textarea></label>
       <label>사진<input id="f-image" type="file" accept="image/*" /></label>
       <ul id="f-errors" class="errors"></ul>
       <div class="modal-actions">
         <button type="button" id="f-cancel" class="btn-ghost">취소</button>
-        <button type="submit" id="f-submit" class="btn-gold">봉헌</button>
+        <button type="submit" id="f-submit" class="btn-gold">작성</button>
       </div>
     </form>
+  </div>
+
+  <div id="detail-modal" class="modal" hidden>
+    <div class="detail-card">
+      <button type="button" id="detail-close" class="detail-close" title="닫기">✕</button>
+      <img id="d-photo" class="d-photo" alt="" />
+      <div class="d-info">
+        <h2 id="d-food"></h2>
+        <p id="d-meta" class="sub"></p>
+        <p id="d-body" class="d-body"></p>
+      </div>
+      <div class="comments">
+        <h3>댓글</h3>
+        <ul id="comment-list" class="comment-list"></ul>
+        <form id="comment-form" class="comment-form">
+          <input id="c-name" type="text" maxlength="20" placeholder="이름" />
+          <input id="c-text" type="text" maxlength="500" placeholder="댓글을 입력하세요" />
+          <button type="submit" class="btn-gold">등록</button>
+        </form>
+        <p id="comment-login-hint" class="comment-hint" hidden>댓글을 쓰려면 구글 로그인하세요.</p>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="mukgit.js"></script>
