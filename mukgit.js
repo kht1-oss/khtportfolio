@@ -1,9 +1,10 @@
 import { firebaseConfig, ADMIN_EMAIL } from "./firebase-config.js";
-import { rankPosts, formatPrice, validatePostInput, hasUserVoted, canDeletePost } from "./mukgit.utils.js";
+import { rankPosts, formatPrice, validatePostInput, hasUserVoted, canDeletePost, canDeleteComment } from "./mukgit.utils.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, onSnapshot,
   doc, updateDoc, deleteDoc, increment, arrayUnion, serverTimestamp,
+  query, orderBy,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
@@ -82,16 +83,100 @@ function openDetail(post) {
   $("#d-food").textContent = post.foodName;
   $("#d-meta").textContent = `${post.storeName} · ${formatPrice(post.price)} · by ${post.author}`;
   $("#d-body").textContent = post.body || "";
+  updateCommentFormVisibility();
+  commentListEl.innerHTML = "";
+  subscribeComments(post.id);
   detailModal.hidden = false;
 }
 
 function closeDetail() {
   detailModal.hidden = true;
   detailPostId = null;
+  if (commentsUnsub) { commentsUnsub(); commentsUnsub = null; }
+  commentListEl.innerHTML = "";
 }
 
 $("#detail-close").addEventListener("click", closeDetail);
 detailModal.addEventListener("click", (e) => { if (e.target === detailModal) closeDetail(); });
+
+let commentsUnsub = null;
+const commentListEl = $("#comment-list");
+const commentForm = $("#comment-form");
+const commentHint = $("#comment-login-hint");
+
+function commentView(docSnap) {
+  const d = docSnap.data();
+  const created = d.createdAt && typeof d.createdAt.toMillis === "function"
+    ? d.createdAt.toMillis() : 0;
+  return {
+    id: docSnap.id,
+    name: d.name ?? "",
+    text: d.text ?? "",
+    commenterUid: d.commenterUid ?? "",
+    createdAtMillis: created,
+  };
+}
+
+function renderComments(comments) {
+  if (comments.length === 0) {
+    commentListEl.innerHTML = `<li class="comment-hint">아직 댓글이 없어요.</li>`;
+    return;
+  }
+  commentListEl.innerHTML = comments.map((c) => {
+    const del = canDeleteComment(c, currentUser, ADMIN_EMAIL)
+      ? `<button class="c-del" data-action="del-comment" data-cid="${escapeHtml(c.id)}" title="삭제">🗑️</button>`
+      : "";
+    return `<li class="comment-item">${del}<span class="c-name">${escapeHtml(c.name)}</span><div class="c-text">${escapeHtml(c.text)}</div></li>`;
+  }).join("");
+}
+
+function subscribeComments(postId) {
+  const col = collection(db, "posts", postId, "comments");
+  commentsUnsub = onSnapshot(query(col, orderBy("createdAt")), (snap) => {
+    renderComments(snap.docs.map(commentView));
+  }, (err) => {
+    console.error(err);
+    commentListEl.innerHTML = `<li class="comment-hint">댓글을 불러오지 못했어요.</li>`;
+  });
+}
+
+function updateCommentFormVisibility() {
+  const loggedIn = !!currentUser;
+  commentForm.hidden = !loggedIn;
+  commentHint.hidden = loggedIn;
+}
+
+commentForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentUser || !detailPostId) return;
+  const name = $("#c-name").value.trim();
+  const text = $("#c-text").value.trim();
+  if (!name || !text) return;
+  try {
+    await addDoc(collection(db, "posts", detailPostId, "comments"), {
+      name,
+      text,
+      commenterUid: currentUser.uid,
+      createdAt: serverTimestamp(),
+    });
+    $("#c-text").value = "";
+  } catch (err) {
+    console.error(err);
+    alert("댓글 작성에 실패했어요.");
+  }
+});
+
+commentListEl.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-action='del-comment']");
+  if (!btn || !detailPostId) return;
+  if (!confirm("이 댓글을 삭제할까요?")) return;
+  try {
+    await deleteDoc(doc(db, "posts", detailPostId, "comments", btn.dataset.cid));
+  } catch (err) {
+    console.error(err);
+    alert("댓글 삭제에 실패했어요.");
+  }
+});
 
 function renderBoard(posts) {
   const ranked = rankPosts(posts);
