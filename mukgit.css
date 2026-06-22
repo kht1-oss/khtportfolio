@@ -173,3 +173,28 @@ main { max-width: 960px; margin: 0 auto; padding: 8px 16px 80px; }
 @media (prefers-reduced-motion: reduce) {
   .bg-emojis span { animation: none; opacity: 0.25; }
 }
+
+/* 도움말 */
+.help-btn {
+  position: absolute; top: 14px; left: 14px;
+  border: 1px solid #f3cdde; background: #fff0f5; color: #c2487a;
+  border-radius: 20px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+  font-family: "Helvetica Neue", sans-serif;
+}
+.help-btn:hover { background: #ffe3ee; }
+.help-card {
+  background: #fff; border-radius: 16px; width: 100%; max-width: 460px;
+  max-height: 88vh; overflow-y: auto; position: relative; padding: 18px 18px 22px;
+}
+.help-card h2 { color: var(--accent); text-align: center; margin: 4px 0 8px; }
+.help-intro { text-align: center; color: #b07a93; font-size: 13px; margin: 0 0 12px; }
+.help-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.help-steps h3 { color: var(--accent); font-size: 15px; margin: 0 0 4px; }
+.help-steps p { margin: 0 0 8px; font-size: 14px; color: #4a3a40; }
+.guide-shot {
+  border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff5fa;
+}
+.guide-shot img { width: 100%; display: block; }
+.shot-ph { display: none; }
+.guide-shot.no-img { display: flex; align-items: center; justify-content: center; min-height: 90px; }
+.guide-shot.no-img .shot-ph { display: block; color: #c79bb0; font-size: 13px; }

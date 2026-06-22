@@ -9,6 +9,7 @@
 <body>
   <div id="bg-emojis" class="bg-emojis" aria-hidden="true"></div>
   <header class="site-header">
+    <button id="help-btn" class="help-btn">❓ 도움말</button>
     <div class="auth">
       <button id="login-btn" class="login-btn">구글로 로그인</button>
       <span id="user-area" class="user-area" hidden>
@@ -66,6 +67,42 @@
         </form>
         <p id="comment-login-hint" class="comment-hint" hidden>댓글을 쓰려면 구글 로그인하세요.</p>
       </div>
+    </div>
+  </div>
+
+  <div id="help-modal" class="modal" hidden>
+    <div class="help-card">
+      <button type="button" id="help-close" class="detail-close" title="닫기">✕</button>
+      <h2>🏛️ 맛킷리스트 사용법</h2>
+      <p class="help-intro">로그인 없이 구경은 자유롭게! 글쓰기·추천·댓글은 구글 로그인 후 이용해요.</p>
+
+      <ol class="help-steps">
+        <li>
+          <h3>1. 구글 로그인</h3>
+          <p>오른쪽 위 <b>"구글로 로그인"</b> 버튼을 눌러 로그인하세요.</p>
+          <div class="guide-shot"><img src="guide/1-login.png" alt="로그인 화면" onerror="this.style.display='none'; this.parentElement.classList.add('no-img')" /><span class="shot-ph">📷 이미지 준비 중</span></div>
+        </li>
+        <li>
+          <h3>2. 맛집 올리기</h3>
+          <p>오른쪽 아래 <b>＋</b> 버튼 → 사진·음식 이름·작성자·가격·가게·본문을 적고 <b>"작성"</b>.</p>
+          <div class="guide-shot"><img src="guide/2-write.png" alt="글쓰기 화면" onerror="this.style.display='none'; this.parentElement.classList.add('no-img')" /><span class="shot-ph">📷 이미지 준비 중</span></div>
+        </li>
+        <li>
+          <h3>3. 추천하기</h3>
+          <p>카드의 <b>🤍 하트</b>를 누르면 추천돼요(계정당 1번, ❤️로 바뀜).</p>
+          <div class="guide-shot"><img src="guide/3-vote.png" alt="추천 화면" onerror="this.style.display='none'; this.parentElement.classList.add('no-img')" /><span class="shot-ph">📷 이미지 준비 중</span></div>
+        </li>
+        <li>
+          <h3>4. 자세히 보기 & 댓글</h3>
+          <p>카드를 누르면 <b>상세창</b>이 열려 큰 사진·본문·댓글을 볼 수 있고, 댓글도 달 수 있어요.</p>
+          <div class="guide-shot"><img src="guide/4-detail.png" alt="상세창/댓글 화면" onerror="this.style.display='none'; this.parentElement.classList.add('no-img')" /><span class="shot-ph">📷 이미지 준비 중</span></div>
+        </li>
+        <li>
+          <h3>5. 삭제</h3>
+          <p>내가 쓴 글·댓글의 <b>🗑️</b>로 삭제할 수 있어요(관리자는 전체 삭제 가능).</p>
+          <div class="guide-shot"><img src="guide/5-delete.png" alt="삭제 화면" onerror="this.style.display='none'; this.parentElement.classList.add('no-img')" /><span class="shot-ph">📷 이미지 준비 중</span></div>
+        </li>
+      </ol>
     </div>
   </div>
 
