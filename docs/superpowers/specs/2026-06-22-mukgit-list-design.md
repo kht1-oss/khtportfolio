@@ -24,14 +24,15 @@
 | 색감 | 하늘빛 + 구름 흰색 (밝은 배경, 금빛은 1위 포인트) |
 
 ## 아키텍처
-- 화면: 정적 `index.html` (HTML/CSS/Vanilla JS) — GitHub Pages 배포
+- 화면: 정적 `mukgit.html` (HTML/CSS/Vanilla JS) — GitHub Pages 배포
+  - 포트폴리오 사이트의 `index.html`과 구분하기 위해 파일명을 `mukgit.html`로 둔다
 - 백엔드: Firebase
   - Firestore: 글 데이터 + 추천수
   - Storage: 음식 사진 파일
 - Firebase JS SDK를 CDN으로 불러와 클라이언트에서 직접 연동
 - Firebase 설정값은 코드에 공개됨(Firebase 설계상 정상). 접근은 보안 규칙으로 통제.
 
-## 화면 구성 (단일 페이지)
+## 화면 구성 (단일 페이지 — `mukgit.html`)
 1. **헤더** — 사이트 제목("올림푸스 명예의 전당" 무드), 신전 분위기 장식
 2. **랭킹 보드 (메인)**
    - Firestore `posts`를 `votes` 내림차순으로 실시간 구독
