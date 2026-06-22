@@ -389,3 +389,20 @@ boardEl.addEventListener("click", async (e) => {
     }
   }
 });
+
+// ---- 떠다니는 배경 이모지 ----
+(function spawnBgEmojis() {
+  const layer = document.getElementById("bg-emojis");
+  if (!layer) return;
+  const emojis = ["🤍", "❤️", "🩷", "🍕", "🍜", "🍣", "🍔", "🍝", "🥘", "🍰", "🍩"];
+  const count = window.innerWidth < 560 ? 8 : 15;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("span");
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.fontSize = 20 + Math.random() * 22 + "px";
+    el.style.animationDuration = 14 + Math.random() * 16 + "s";
+    el.style.animationDelay = -Math.random() * 20 + "s";
+    layer.appendChild(el);
+  }
+})();
