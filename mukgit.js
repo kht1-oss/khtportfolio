@@ -1,5 +1,5 @@
 import { firebaseConfig, ADMIN_EMAIL } from "./firebase-config.js";
-import { rankPosts, formatPrice, validatePostInput, hasUserVoted, canDeletePost, canDeleteComment } from "./mukgit.utils.js";
+import { rankPosts, formatPrice, validatePostInput, hasUserVoted, canDeletePost, canDeleteComment, canEditPost } from "./mukgit.utils.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, onSnapshot,
@@ -51,6 +51,7 @@ function postCardHTML(p, rank) {
   const crown = rank === 1 ? "👑" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : `#${rank}`;
   const voted = hasUserVoted(p, currentUser);
   const canDelete = canDeletePost(p, currentUser, ADMIN_EMAIL);
+  const canEdit = canEditPost(p, currentUser);
   return `
     <article class="post rank-${rank}" data-id="${escapeHtml(p.id)}">
       <img class="photo" src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.foodName)}" loading="lazy" />
@@ -62,6 +63,7 @@ function postCardHTML(p, rank) {
       </div>
       <div class="footer">
         <button class="vote-btn ${voted ? "voted" : ""}" data-action="vote" ${voted ? "disabled" : ""}>${voted ? "❤️" : "🤍"} ${p.votes}</button>
+        ${canEdit ? `<button class="edit-btn" data-action="edit" title="수정">✏️</button>` : ""}
         ${canDelete ? `<button class="del-btn" data-action="del" title="삭제">🗑️</button>` : ""}
       </div>
     </article>`;
@@ -253,9 +255,35 @@ const modal = $("#write-modal");
 const form = $("#write-form");
 const errorsEl = $("#f-errors");
 const submitBtn = $("#f-submit");
+const writeTitle = $("#write-title");
+const editPhotoHint = $("#edit-photo-hint");
+let editingPostId = null;
+
+function setWriteMode(postId) {
+  editingPostId = postId || null;
+  const isEdit = !!editingPostId;
+  writeTitle.textContent = isEdit ? "맛집 수정" : "맛집 알리기";
+  submitBtn.textContent = isEdit ? "수정" : "작성";
+  editPhotoHint.hidden = !isEdit;
+}
+
+function openEdit(post) {
+  $("#f-food").value = post.foodName;
+  $("#f-author").value = post.author;
+  $("#f-price").value = post.price;
+  $("#f-store").value = post.storeName;
+  $("#f-body").value = post.body || "";
+  $("#f-image").value = "";
+  errorsEl.innerHTML = "";
+  setWriteMode(post.id);
+  modal.hidden = false;
+}
 
 $("#open-write").addEventListener("click", () => {
   if (!currentUser) { alert("글을 올리려면 먼저 구글 로그인해 주세요."); return; }
+  form.reset();
+  errorsEl.innerHTML = "";
+  setWriteMode(null);
   modal.hidden = false;
 });
 $("#f-cancel").addEventListener("click", () => closeModal());
@@ -264,6 +292,7 @@ function closeModal() {
   modal.hidden = true;
   form.reset();
   errorsEl.innerHTML = "";
+  setWriteMode(null);
 }
 
 // 이미지를 리사이즈 + JPEG 압축해서 data URL(base64 문자열)로 반환한다.
@@ -317,41 +346,54 @@ function compressImage(file) {
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!currentUser) { errorsEl.innerHTML = `<li>로그인 후 이용해 주세요.</li>`; return; }
+  const editing = editingPostId;
   const file = $("#f-image").files[0];
   const input = {
     foodName: $("#f-food").value,
     author: $("#f-author").value,
     price: $("#f-price").value,
     storeName: $("#f-store").value,
-    hasImage: !!file,
+    hasImage: editing ? true : !!file,
   };
   const { valid, errors } = validatePostInput(input);
   errorsEl.innerHTML = errors.map((m) => `<li>${escapeHtml(m)}</li>`).join("");
   if (!valid) return;
 
   submitBtn.disabled = true;
-  submitBtn.textContent = "작성 중...";
+  submitBtn.textContent = editing ? "수정 중..." : "작성 중...";
   try {
-    const imageUrl = await compressImage(file);
-    await addDoc(postsCol, {
-      foodName: input.foodName.trim(),
-      author: input.author.trim(),
-      price: Number(input.price),
-      storeName: input.storeName.trim(),
-      body: $("#f-body").value.trim(),
-      imageUrl,
-      votes: 0,
-      voters: [],
-      ownerUid: currentUser.uid,
-      createdAt: serverTimestamp(),
-    });
+    if (editing) {
+      const data = {
+        foodName: input.foodName.trim(),
+        author: input.author.trim(),
+        price: Number(input.price),
+        storeName: input.storeName.trim(),
+        body: $("#f-body").value.trim(),
+      };
+      if (file) data.imageUrl = await compressImage(file);
+      await updateDoc(doc(db, "posts", editing), data);
+    } else {
+      const imageUrl = await compressImage(file);
+      await addDoc(postsCol, {
+        foodName: input.foodName.trim(),
+        author: input.author.trim(),
+        price: Number(input.price),
+        storeName: input.storeName.trim(),
+        body: $("#f-body").value.trim(),
+        imageUrl,
+        votes: 0,
+        voters: [],
+        ownerUid: currentUser.uid,
+        createdAt: serverTimestamp(),
+      });
+    }
     closeModal();
   } catch (err) {
     console.error(err);
     errorsEl.innerHTML = `<li>${escapeHtml(err.message || "저장에 실패했어요. 다시 시도해 주세요.")}</li>`;
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = "작성";
+    submitBtn.textContent = editingPostId ? "수정" : "작성";
   }
 });
 
@@ -364,6 +406,12 @@ boardEl.addEventListener("click", async (e) => {
   if (!btn) {
     const post = latestPosts.find((p) => p.id === id);
     if (post) openDetail(post);
+    return;
+  }
+
+  if (btn.dataset.action === "edit") {
+    const post = latestPosts.find((p) => p.id === id);
+    if (post && canEditPost(post, currentUser)) openEdit(post);
     return;
   }
 
