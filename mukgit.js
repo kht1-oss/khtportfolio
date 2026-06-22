@@ -145,7 +145,6 @@ $("#open-write").addEventListener("click", () => {
   modal.hidden = false;
 });
 $("#f-cancel").addEventListener("click", () => closeModal());
-modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
 
 function closeModal() {
   modal.hidden = true;
@@ -217,7 +216,7 @@ form.addEventListener("submit", async (e) => {
   if (!valid) return;
 
   submitBtn.disabled = true;
-  submitBtn.textContent = "봉헌 중...";
+  submitBtn.textContent = "작성 중...";
   try {
     const imageUrl = await compressImage(file);
     await addDoc(postsCol, {
@@ -237,7 +236,7 @@ form.addEventListener("submit", async (e) => {
     errorsEl.innerHTML = `<li>${escapeHtml(err.message || "저장에 실패했어요. 다시 시도해 주세요.")}</li>`;
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = "봉헌";
+    submitBtn.textContent = "작성";
   }
 });
 
