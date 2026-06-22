@@ -30,3 +30,8 @@ export function canDeletePost(post, user, adminEmail) {
   if (!user) return false;
   return post?.ownerUid === user.uid || user.email === adminEmail;
 }
+
+export function canDeleteComment(comment, user, adminEmail) {
+  if (!user) return false;
+  return comment?.commenterUid === user.uid || user.email === adminEmail;
+}

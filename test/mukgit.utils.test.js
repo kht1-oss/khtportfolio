@@ -6,6 +6,7 @@ import {
   rankPosts,
   hasUserVoted,
   canDeletePost,
+  canDeleteComment,
 } from "../mukgit.utils.js";
 
 test("formatPrice: 숫자를 천단위 콤마 + 원으로", () => {
@@ -115,4 +116,29 @@ test("canDeletePost: 남의 글이면 false", () => {
 
 test("canDeletePost: 비로그인은 false", () => {
   assert.equal(canDeletePost({ ownerUid: "u1" }, null, "admin@x.com"), false);
+});
+
+test("canDeleteComment: 작성자면 true", () => {
+  assert.equal(
+    canDeleteComment({ commenterUid: "u1" }, { uid: "u1", email: "a@b.c" }, "admin@x.com"),
+    true
+  );
+});
+
+test("canDeleteComment: 관리자 이메일이면 true", () => {
+  assert.equal(
+    canDeleteComment({ commenterUid: "u2" }, { uid: "u1", email: "admin@x.com" }, "admin@x.com"),
+    true
+  );
+});
+
+test("canDeleteComment: 남의 댓글이면 false", () => {
+  assert.equal(
+    canDeleteComment({ commenterUid: "u2" }, { uid: "u1", email: "a@b.c" }, "admin@x.com"),
+    false
+  );
+});
+
+test("canDeleteComment: 비로그인은 false", () => {
+  assert.equal(canDeleteComment({ commenterUid: "u1" }, null, "admin@x.com"), false);
 });
