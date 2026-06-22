@@ -46,6 +46,28 @@
     </form>
   </div>
 
+  <div id="detail-modal" class="modal" hidden>
+    <div class="detail-card">
+      <button type="button" id="detail-close" class="detail-close" title="닫기">✕</button>
+      <img id="d-photo" class="d-photo" alt="" />
+      <div class="d-info">
+        <h2 id="d-food"></h2>
+        <p id="d-meta" class="sub"></p>
+        <p id="d-body" class="d-body"></p>
+      </div>
+      <div class="comments">
+        <h3>댓글</h3>
+        <ul id="comment-list" class="comment-list"></ul>
+        <form id="comment-form" class="comment-form">
+          <input id="c-name" type="text" maxlength="20" placeholder="이름" />
+          <input id="c-text" type="text" maxlength="500" placeholder="댓글을 입력하세요" />
+          <button type="submit" class="btn-gold">등록</button>
+        </form>
+        <p id="comment-login-hint" class="comment-hint" hidden>댓글을 쓰려면 구글 로그인하세요.</p>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="mukgit.js"></script>
 </body>
 </html>

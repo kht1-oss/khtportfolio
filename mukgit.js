@@ -71,6 +71,28 @@ function escapeHtml(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+// ---- 상세창 ----
+const detailModal = $("#detail-modal");
+let detailPostId = null;
+
+function openDetail(post) {
+  detailPostId = post.id;
+  $("#d-photo").src = post.imageUrl;
+  $("#d-photo").alt = post.foodName;
+  $("#d-food").textContent = post.foodName;
+  $("#d-meta").textContent = `${post.storeName} · ${formatPrice(post.price)} · by ${post.author}`;
+  $("#d-body").textContent = post.body || "";
+  detailModal.hidden = false;
+}
+
+function closeDetail() {
+  detailModal.hidden = true;
+  detailPostId = null;
+}
+
+$("#detail-close").addEventListener("click", closeDetail);
+detailModal.addEventListener("click", (e) => { if (e.target === detailModal) closeDetail(); });
+
 function renderBoard(posts) {
   const ranked = rankPosts(posts);
   emptyEl.hidden = ranked.length > 0;
@@ -244,11 +266,15 @@ form.addEventListener("submit", async (e) => {
 
 // ---- 추천 / 삭제 ----
 boardEl.addEventListener("click", async (e) => {
-  const btn = e.target.closest("button[data-action]");
-  if (!btn) return;
-  const card = btn.closest(".post");
+  const card = e.target.closest(".post");
   if (!card) return;
   const id = card.dataset.id;
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) {
+    const post = latestPosts.find((p) => p.id === id);
+    if (post) openDetail(post);
+    return;
+  }
 
   if (btn.dataset.action === "vote") {
     if (!currentUser) { alert("추천하려면 먼저 구글 로그인해 주세요."); return; }
